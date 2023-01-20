@@ -24,20 +24,11 @@ export class Identifier {
 }
 
 export class Statement {
-  token!: Token;
   name: Identifier | null = null;
   value: Identifier | null = null;
-
-  tokenLiteral(): string {
-    return this.token.literal;
-  }
+  children?: Statement[];
 }
 
 export default class Ast implements Program {
   statements: Statement[] = [];
-
-  tokenLiteral(): string {
-    if (this.statements.length > 0) return this.statements[0].tokenLiteral();
-    else return '';
-  }
 }

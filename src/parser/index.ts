@@ -62,9 +62,21 @@ export default class Parser {
     return statement;
   }
 
+  // TODO: 모든 사칙연산에 적용 및 재귀로 활용
   private parsePlusStatement() {
     const statement = new Statement();
-    // infix expression
+    const left = this.prevToken();
+    if (left === null) return null;
+    if (left?.value?.token.type !== this.peekToken.value?.token.type) return null;
+
+    const leftStatement = new Statement();
+    const rightStatement = new Statement();
+
+    leftStatement.value = new Identifier(left.value!.token, left.value!.token.literal);
+    rightStatement.value = new Identifier(this.peekToken.value!.token, this.peekToken.value!.token.literal);
+    statement.value = new Identifier(this.curToken.value!.token, this.curToken.value!.token.literal);
+    statement.children = [leftStatement, rightStatement];
+
     return statement;
   }
 
@@ -74,6 +86,11 @@ export default class Parser {
 
     statement.value = new Identifier(this.peekToken.value!.token, this.peekToken.value!.token.literal);
     return statement;
+  }
+
+  private prevToken() {
+    if (this.position > 1) return this.lexer.statements[this.position-2];
+    return null;
   }
 
   private curTokenIs(token: TokenType): boolean {
