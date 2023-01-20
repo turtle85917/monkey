@@ -3,6 +3,7 @@ export interface Token {
   type: TokenType;
   literal: string;
 };
+
 export enum ETokens {
   "ILLEGAL" = "ILLEGAL",
   "EOF" = "EOF",
@@ -48,6 +49,7 @@ export enum ETokens {
   "ELSE" = "ELSE",
   "RETURN" = "RETURN",
 };
+
 export const keywords = {
   "function": ETokens.FUNCTION,
   "let": ETokens.LET,

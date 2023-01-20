@@ -1,11 +1,11 @@
-import { Token } from "../token/token";
+import { Token } from "../token";
 
 interface Program {
   statements: Statement[];
 }
 
 export class Identifier {
-  token: Token = {type:'', literal:''};
+  token!: Token;
   value: string | number | null = null;
 
   constructor(token: Token, value: string) {
@@ -24,7 +24,7 @@ export class Identifier {
 }
 
 export class Statement {
-  token: Token = {type:'', literal:''};
+  token!: Token;
   name: Identifier | null = null;
   value: Identifier | null = null;
 

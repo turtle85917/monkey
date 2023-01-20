@@ -1,13 +1,8 @@
-import { Token } from "../token/token";
+import { Token } from "../token";
 import Lexer from ".";
 
 export function LexerTestcase() {
-  const input = `"Hello(), World!";
-let fn = function(x, y) {
-  return x + y;
-};
-let one = 1;
-one + one;`;
+  const input = `let one = 1;`;
   const tests: Token[] = [
     { type: "LET", literal: "let" },
     { type: "IDENT", literal: "five" },
@@ -18,7 +13,8 @@ one + one;`;
 
   const lexer = new Lexer(input);
   lexer.lexing();
-  console.log(lexer.statements)
+  lexer.statements.forEach(statement => console.log(`Value '${statement.value?.value}' // '${statement.value?.token.literal}'(${statement.value?.token.type})`));
+  // console.log(lexer.statements)
   // for (let i = 0; i < testcaseCount; i++) {
   //   const tok = lexer.nextToken();
   //   console.log(`input[${i}] - ${tok.literal} '${tok.type}'`);

@@ -1,28 +1,32 @@
 import Ast, { Identifier, Statement } from "../ast";
 import Lexer from "../lexer";
-import { Token, TokenType } from "../token/token";
+import { TokenType } from "../token";
 
 export default class Parser {
   lexer: Lexer;
-  curToken: Token = {type:'', literal:''};
-  peekToken: Token = {type:'', literal:''};
+  position: number = 0;
+  curToken!: Statement;
+  peekToken!: Statement;
 
   constructor(l: Lexer) {
     this.lexer = l;
-    this.nextToken();
-    this.nextToken();
+    this.lexer.lexing();
+    this.curToken = this.lexer.statements[0];
+    this.peekToken = this.lexer.statements[1];
+    this.position++;
   }
 
   nextToken() {
-    this.curToken = this.peekToken;
-    this.peekToken = this.lexer.nextToken();
+    this.curToken = this.lexer.statements[this.position];
+    this.peekToken = this.lexer.statements[this.position+1];
+    this.position++;
   }
 
   parseProgram() {
     const program = new Ast();
     program.statements = [];
     
-    while (this.curToken.type !== "EOF") {
+    while (this.curToken !== undefined && this.peekToken !== undefined) {
       const stmt = this.parseStatement();
       if (stmt !== null) program.statements.push(stmt);
       this.nextToken();
@@ -31,9 +35,8 @@ export default class Parser {
     return program;
   }
 
-  parseStatement() {
-    console.log(this.curToken)
-    switch (this.curToken.type) {
+  private parseStatement() {
+    switch (this.curToken.value?.token.type) {
       case "LET":
         return this.parseLetStatement();
       case "PLUS":
@@ -45,43 +48,43 @@ export default class Parser {
     }
   }
 
-  parseLetStatement() {
+  private parseLetStatement() {
     const statement = new Statement();
     if (!this.expectPeek("IDENT")) return null;
 
-    statement.name = new Identifier(this.curToken, this.curToken.literal);
+    statement.name = new Identifier(this.curToken.value!.token, this.curToken.value!.token.literal);
     if (!this.expectPeek("ASSIGN")) return null;
 
     // TODO: 세미콜론을 만날 때까지 표현식을 건너뛴다.
 
-    statement.value = new Identifier(this.peekToken, this.peekToken.literal);
+    statement.value = new Identifier(this.peekToken.value!.token, this.peekToken.value!.token.literal);
     while (this.peekTokenIs("SEMICOLON")) this.nextToken();
     return statement;
   }
 
-  parsePlusStatement() {
+  private parsePlusStatement() {
     const statement = new Statement();
     // infix expression
     return statement;
   }
 
-  processSemicolon() {
+  private processSemicolon() {
     const statement = new Statement();
     if (!["INT", "STRING"].some(type => this.peekTokenIs(type))) return null;
 
-    statement.value = new Identifier(this.peekToken, this.peekToken.literal);
+    statement.value = new Identifier(this.peekToken.value!.token, this.peekToken.value!.token.literal);
     return statement;
   }
 
-  curTokenIs(token: TokenType): boolean {
-    return this.curToken.type === token;
+  private curTokenIs(token: TokenType): boolean {
+    return this.curToken.value?.token.type === token;
   }
 
-  peekTokenIs(token: TokenType): boolean {
-    return this.peekToken.type === token;
+  private peekTokenIs(token: TokenType): boolean {
+    return this.peekToken?.value?.token.type === token;
   }
 
-  expectPeek(token: TokenType): boolean {
+  private expectPeek(token: TokenType): boolean {
     if (this.peekTokenIs(token)) {
       this.nextToken();
       return true;

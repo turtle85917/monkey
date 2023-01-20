@@ -1,9 +1,5 @@
-import { ETokens, keywords, Token, TokenType } from "../token/token";
-
-interface Statement {
-  kind: string;
-  value: string;
-}
+import { Identifier, Statement } from "../ast";
+import { ETokens, keywords, Token, TokenType } from "../token";
 
 export default class Lexer {
   ch: string = '';
@@ -20,7 +16,9 @@ export default class Lexer {
   lexing() {
     while (this.readPosition <= this.input.length) {
       const tok = this.nextToken();
-      this.statements.push({ kind: tok.type, value: tok.literal });
+      const statement = new Statement();
+      statement.value = new Identifier(tok, tok.literal);
+      this.statements.push(statement);
     }
   }
 
@@ -102,12 +100,12 @@ export default class Lexer {
         tok = this.newToken("RBRACE", this.ch);
         break;
       case '0':
-        tok.literal = '';
-        tok.type = ETokens.EOF;
+        tok = this.newToken("EOF", '');
         break;
       default:
         if (this.isLetter(this.ch)) {
-          tok = this.newToken(this.lookupIdent(tok?.literal ?? ''), this.readIdentifier());
+          const literal = this.readIdentifier();
+          tok = this.newToken(this.lookupIdent(literal), literal);
           return tok;
         } else if (this.isDigit(this.ch)) {
           tok = this.newToken("INT", this.readNumber());
