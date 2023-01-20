@@ -1,26 +1,32 @@
 import { ETokens, keywords, Token, TokenType } from "../token/token";
 
-interface L {
-  input: string;
-  position: number;
-  readPosition: number;
-  ch: any;
+interface Statement {
+  kind: string;
+  value: string;
 }
 
-export default class Lexer implements L {
+export default class Lexer {
+  ch: string = '';
   input: string = '';
   position: number = 0;
   readPosition: number = 0;
-  ch: any;
+  statements: Statement[] = [];
 
   constructor(input: string) {
     this.input = input;
     this.readChar();
   }
 
+  lexing() {
+    while (this.readPosition <= this.input.length) {
+      const tok = this.nextToken();
+      this.statements.push({ kind: tok.type, value: tok.literal });
+    }
+  }
+
   readChar() {
     if (this.readPosition >= this.input.length) {
-      this.ch = 0;
+      this.ch = '0';
     } else  {
       this.ch = this.input[this.readPosition];
     }
@@ -29,7 +35,7 @@ export default class Lexer implements L {
   }
 
   nextToken() {
-    let tok: Token = {literal:'',type:''};
+    let tok!: Token;
     this.skipWhitespace();
     switch (this.ch) {
       case '=':
@@ -81,8 +87,7 @@ export default class Lexer implements L {
         this.readChar();
         const position = this.position;
         while (this.ch !== token) this.readChar();
-        tok.literal = this.input.slice(position, this.position);
-        tok.type = ETokens.STRING;
+        tok = this.newToken("STRING", this.input.slice(position, this.position));
         break;
       case '(':
         tok = this.newToken("LPAREN", this.ch);
@@ -96,18 +101,16 @@ export default class Lexer implements L {
       case '}':
         tok = this.newToken("RBRACE", this.ch);
         break;
-      case 0:
+      case '0':
         tok.literal = '';
         tok.type = ETokens.EOF;
         break;
       default:
         if (this.isLetter(this.ch)) {
-          tok.literal = this.readVariable();
-          tok.type = this.lookupIdent(tok.literal);
+          tok = this.newToken(this.lookupIdent(tok?.literal ?? ''), this.readIdentifier());
           return tok;
         } else if (this.isDigit(this.ch)) {
-          tok.literal = this.readNumber();
-          tok.type = ETokens.INT;
+          tok = this.newToken("INT", this.readNumber());
           return tok;
         } else {
           tok = this.newToken(ETokens.ILLEGAL, this.ch);
@@ -119,6 +122,14 @@ export default class Lexer implements L {
     return tok;
   }
 
+  isLetter(ch: string): boolean {
+    return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch === '_';
+  }
+
+  isDigit(ch: string): boolean {
+    return '0' <= ch && ch <= '9';
+  }
+
   private peekChar(): any {
     if (this.readPosition >= this.input.length) return 0;
     else return this.input[this.readPosition];
@@ -128,25 +139,16 @@ export default class Lexer implements L {
     while (this.ch === ' ' || this.ch === "\t" || this.ch === "\n" || this.ch === "\r") this.readChar();
   }
 
-  isLetter(ch: any): boolean {
-    if (typeof ch !== "string") return false;
-    return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch === '_';
-  }
-
-  isDigit(ch: any): boolean {
-    if (typeof ch !== "string") return false;
-    return '0' <= ch && ch <= '9';
-  }
-
-  private readVariable(): string {
+  private readIdentifier(): string {
     const position = this.position;
-    while (this.ch !== '=' && this.ch !== ' ') this.readChar();
+    while (this.isLetter(this.ch)) this.readChar();
     return this.input.slice(position, this.position);
   }
 
   private readNumber(): string {
     const position = this.position;
     while (this.isDigit(this.ch)) this.readChar();
+    console.log()
     return this.input.slice(position, this.position);
   }
 
@@ -156,7 +158,7 @@ export default class Lexer implements L {
     return ETokens.IDENT;
   }
 
-  newToken(tokenType: TokenType, ch: any): Token {
-    return { type: tokenType, literal: String(ch) };
+  newToken(tokenType: TokenType, ch: string): Token {
+    return { type: tokenType, literal: ch };
   }
 }

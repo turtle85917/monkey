@@ -32,9 +32,12 @@ export default class Parser {
   }
 
   parseStatement() {
+    console.log(this.curToken)
     switch (this.curToken.type) {
       case "LET":
         return this.parseLetStatement();
+      case "PLUS":
+        return this.parsePlusStatement();
       case "SEMICOLON":
         return this.processSemicolon();
       default:
@@ -53,6 +56,12 @@ export default class Parser {
 
     statement.value = new Identifier(this.peekToken, this.peekToken.literal);
     while (this.peekTokenIs("SEMICOLON")) this.nextToken();
+    return statement;
+  }
+
+  parsePlusStatement() {
+    const statement = new Statement();
+    // infix expression
     return statement;
   }
 

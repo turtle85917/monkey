@@ -1,5 +1,5 @@
-import { testNextToken } from "./lexer/lexer_test";
-import testLetStatement from "./parser/parser_test";
+import { LexerTestcase } from "./lexer/lexer_test";
+import testParser from "./parser/parser_test";
 
-// testNextToken();
-testLetStatement();
+LexerTestcase();
+// testParser();
