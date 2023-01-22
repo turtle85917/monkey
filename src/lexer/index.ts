@@ -36,7 +36,7 @@ export default class Lexer {
     let tok!: Token;
     this.skipWhitespace();
     switch (this.ch) {
-      case '=':
+      case ETokens.ASSIGN:
         if (this.peekChar() === '=') { // ==
           const ch = this.ch;
           this.readChar();
@@ -44,13 +44,13 @@ export default class Lexer {
           tok = this.newToken("EQ", literal);
         } else tok = this.newToken("ASSIGN", this.ch);
         break;
-      case '+':
+      case ETokens.PLUS:
         tok = this.newToken("PLUS", this.ch);
         break;
-      case '-':
+      case ETokens.MINUS:
         tok = this.newToken("MINUS", this.ch);
         break;
-      case '!':
+      case ETokens.BANG:
         if (this.peekChar() === '=') { // !=
           const ch = this.ch;
           this.readChar();
@@ -58,45 +58,51 @@ export default class Lexer {
           tok = this.newToken("NOT_EQ", literal);
         } else tok = this.newToken("BANG", this.ch);
         break;
-      case '/':
+      case ETokens.SLASH:
         tok = this.newToken("SLASH", this.ch);
         break;
-      case '*':
+      case ETokens.ASTERISK:
         tok = this.newToken("ASTERISK", this.ch);
         break;
-      case '<':
+      case ETokens.LT:
         tok = this.newToken("LT", this.ch);
         break;
-      case '>':
+      case ETokens.GT:
         tok = this.newToken("GT", this.ch);
         break;
-      case ';':
+      case ETokens.SEMICOLON:
         tok = this.newToken("SEMICOLON", this.ch);
         break;
-      case ',':
+      case ETokens.COMMA:
         tok = this.newToken("COMMA", this.ch);
         break;
-      case '.':
+      case ETokens.DOT:
         tok = this.newToken("DOT", this.ch);
         break;
-      case '"':
-      case '\'':
+      case ETokens.QUOTATION:
+      case ETokens.APOSTROPHE:
         const token = this.ch;
         this.readChar();
         const position = this.position;
         while (this.ch !== token) this.readChar();
         tok = this.newToken("STRING", this.input.slice(position, this.position));
         break;
-      case '(':
+      case ETokens.LPAREN:
         tok = this.newToken("LPAREN", this.ch);
         break;
-      case ')':
+      case ETokens.RPAREN:
         tok = this.newToken("RPAREN", this.ch);
         break;
-      case '{':
+      case ETokens.LBRACKET:
+        tok = this.newToken("LBRACKET", this.ch);
+        break;
+      case ETokens.RBRACKET:
+        tok = this.newToken("RBRACKET", this.ch);
+        break;
+      case ETokens.LBRACE:
         tok = this.newToken("LBRACE", this.ch);
         break;
-      case '}':
+      case ETokens.RBRACE:
         tok = this.newToken("RBRACE", this.ch);
         break;
       case '0':
@@ -146,7 +152,6 @@ export default class Lexer {
   private readNumber(): string {
     const position = this.position;
     while (this.isDigit(this.ch)) this.readChar();
-    console.log()
     return this.input.slice(position, this.position);
   }
 

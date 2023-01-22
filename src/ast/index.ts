@@ -26,7 +26,7 @@ export class Identifier {
 export class Statement {
   name: Identifier | null = null;
   value: Identifier | null = null;
-  children?: Statement[];
+  children: Statement[] = [];
 }
 
 export default class Ast implements Program {

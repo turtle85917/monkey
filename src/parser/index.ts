@@ -1,6 +1,6 @@
 import Ast, { Identifier, Statement } from "../ast";
 import Lexer from "../lexer";
-import { TokenType } from "../token";
+import { Token, TokenType } from "../token";
 
 export default class Parser {
   lexer: Lexer;
@@ -39,8 +39,8 @@ export default class Parser {
     switch (this.curToken.value?.token.type) {
       case "LET":
         return this.parseLetStatement();
-      case "PLUS":
-        return this.parsePlusStatement();
+      case "PLUS" || "MINUS" || "ASTERISK":
+        return this.parseCalcStatement();
       case "SEMICOLON":
         return this.processSemicolon();
       default:
@@ -62,21 +62,51 @@ export default class Parser {
     return statement;
   }
 
-  // TODO: 모든 사칙연산에 적용 및 재귀로 활용
-  private parsePlusStatement() {
-    const statement = new Statement();
+  private returnIntStatement() {
+    if (this.curTokenIs("INT")) {
+      return this.newStatement(null, this.curToken.value!.token);
+    }
+
+    return null;
+  }
+
+  // TODO: 재귀로 활용
+  private parseCalcStatement() {
     const left = this.prevToken();
     if (left === null) return null;
-    if (left?.value?.token.type !== this.peekToken.value?.token.type) return null;
+    if (left.value?.token.type !== this.peekToken.value?.token.type) return null;
 
-    const leftStatement = new Statement();
-    const rightStatement = new Statement();
+    const leftStatement = left.value?.token.type === "LPAREN" ? this.parseParenStatement() : this.returnIntStatement(); // 타입이 INT일 경우 // 아니라면 괄호식
+    const rightStatement = this.returnIntStatement();
 
-    leftStatement.value = new Identifier(left.value!.token, left.value!.token.literal);
-    rightStatement.value = new Identifier(this.peekToken.value!.token, this.peekToken.value!.token.literal);
-    statement.value = new Identifier(this.curToken.value!.token, this.curToken.value!.token.literal);
-    statement.children = [leftStatement, rightStatement];
+    console.log(leftStatement)
 
+    // leftStatement.value = new Identifier(left.value!.token, left.value!.token.literal);
+    // rightStatement.value = new Identifier(this.peekToken.value!.token, this.peekToken.value!.token.literal);
+    // statement.value = new Identifier(this.curToken.value!.token, this.curToken.value!.token.literal);
+    // statement.children = [leftStatement, rightStatement];
+
+    this.nextToken();
+    this.nextToken();
+
+    return this.newStatement(this.curToken.value!.token);
+  }
+
+  // TODO: if문 식의 컨디션 및 함수의 인자 목록으로 인식하게 하기
+  private parseParenStatement(): Statement | null {
+    let statement: Statement | null = null;
+    while (!this.curTokenIs("BPAREN")) {
+      this.nextToken();
+      switch (this.curToken.value?.token.type) {
+        case "LPAREN":
+          statement = this.parseParenStatement();
+        case "PLUS" || "MINUS" || "ASTERISK":
+          statement = this.parseCalcStatement();
+        case "INT":
+          statement = this.returnIntStatement();
+      }
+    }
+    
     return statement;
   }
 
@@ -106,5 +136,15 @@ export default class Parser {
       this.nextToken();
       return true;
     } else return false;
+  }
+
+  private newStatement(ntoken: Token | null, ...vtokens: Token[]) {
+    const statement = new Statement();
+    statement.name = ntoken === null ? null : new Identifier(ntoken, ntoken.literal);
+    vtokens.length === 1
+      ? statement.value = new Identifier(vtokens[0], vtokens[0].literal)
+      : vtokens.forEach(vtoken => statement.children.push(this.newStatement(null, vtoken)));
+
+    return statement;
   }
 }

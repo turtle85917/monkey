@@ -33,8 +33,10 @@ export enum ETokens {
 
   "LPAREN" = '(',
   "RPAREN" = ')',
-  "LBRACE" = '{',
-  "RBRACE" = '}',
+  "LBRACKET" = '{',
+  "RBRACKET" = '}',
+  "LBRACE" = '[',
+  "RBRACE" = ']',
 
   // 불 연산
   "EQ" = "==",
